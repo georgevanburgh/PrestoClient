@@ -18,7 +18,7 @@ namespace PrestoClient.Tests
         public PrestoClientDriver()
         { }
 
-        [Fact]
+        [Fact(Skip = "Cannot run in CI")]
         public async Task TestPassword()
         {
             // ARRANGE

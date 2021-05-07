@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using BAMCIS.PrestoClient.Model.NodeInfo;
 using BAMCIS.PrestoClient.Model.SPI;
+using System.IO;
 
 namespace BAMCIS.PrestoClient
 {
@@ -154,7 +155,7 @@ namespace BAMCIS.PrestoClient
 
             HttpRequestMessage Request = this.BuildRequest(Path, HttpMethod.Get);
 
-            HttpResponseMessage Response = await LocalClient.SendAsync(Request,cancellationToken);
+            HttpResponseMessage Response = await LocalClient.SendAsync(Request, cancellationToken);
 
             string Json = await Response.Content.ReadAsStringAsync();
 
@@ -592,12 +593,12 @@ namespace BAMCIS.PrestoClient
             // This doesn't really do anything but evaluate the headers right now
             this.ProcessResponseHeaders(ResponseMessage);
 
-            string Content = await ResponseMessage.Content.ReadAsStringAsync();
+            Stream Content = await ResponseMessage.Content.ReadAsStreamAsync();
 
             // If parsing the submission response fails, return and exit
             if (!QueryResultsV1.TryParse(Content, out QueryResultsV1 Response, out Exception ParseEx))
             {
-                throw new PrestoException($"The query submission response could not be parsed.", Content, ParseEx);
+                throw new PrestoException($"The query submission response could not be parsed.", ParseEx);
             }
             else
             {
@@ -644,7 +645,7 @@ namespace BAMCIS.PrestoClient
 
                         this.ProcessResponseHeaders(ResponseMessage);
 
-                        Content = await ResponseMessage.Content.ReadAsStringAsync();
+                        Content = await ResponseMessage.Content.ReadAsStreamAsync();
 
                         // Make sure deserialization succeeded
                         if (QueryResultsV1.TryParse(Content, out Response, out ParseEx))
@@ -662,7 +663,7 @@ namespace BAMCIS.PrestoClient
                         }
                         else
                         {
-                            throw new PrestoException("The response from presto could not be deserialized.", Content, ParseEx);
+                            throw new PrestoException("The response from presto could not be deserialized.", ParseEx);
                         }
                     }
 
@@ -941,7 +942,7 @@ namespace BAMCIS.PrestoClient
 
             while (Counter < maxRetries)
             {
-                response = await client.SendAsync(request, cancellationToken);
+                response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
                 switch (response.StatusCode)
                 {

@@ -104,8 +104,7 @@ namespace BAMCIS.PrestoClient
 
         /// <summary>
         /// The amount of time in milliseconds that the client will wait in between
-        /// checks for new data from presto. The minimum interval is 50ms and the maximum interval
-        /// is 5000ms. This defaults to 800ms.
+        /// checks for new data from presto. This defaults to 800ms.
         /// </summary>
         public int CheckInterval
         {
@@ -115,11 +114,6 @@ namespace BAMCIS.PrestoClient
             }
             set
             {
-                if (value < 50)
-                {
-                    throw new ArgumentOutOfRangeException("CheckInterval", "The minimum check interval is 50ms.");
-                }
-
                 if (value > 5000)
                 {
                     throw new ArgumentOutOfRangeException("CheckInterval", "The maximum check interval is 5000ms.");

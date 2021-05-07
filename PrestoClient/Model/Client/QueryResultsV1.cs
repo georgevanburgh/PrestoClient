@@ -5,6 +5,7 @@ using System.Text;
 using System.Linq;
 using BAMCIS.PrestoClient.Serialization;
 using BAMCIS.PrestoClient.Model.Client;
+using System.IO;
 
 namespace BAMCIS.PrestoClient.Model.Statement
 {
@@ -210,28 +211,31 @@ namespace BAMCIS.PrestoClient.Model.Statement
         }
 
 
-        public static bool TryParse(string content, out QueryResultsV1 result, out Exception ex)
+        public static bool TryParse(Stream content, out QueryResultsV1 result, out Exception ex)
         {
             ex = null;
 
-            if (!String.IsNullOrEmpty(content))
+            try
             {
-                try
+                var serializer = new JsonSerializer();
+                using (var sr = new StreamReader(content))
                 {
-                    result = JsonConvert.DeserializeObject<QueryResultsV1>(content);
-                    return true;
-                }
-                catch (Exception e)
-                {
-                    result = null;
-                    ex = e;
-                    return false;
+                    using (var reader = new JsonTextReader(sr))
+                    {
+                        result = serializer.Deserialize<QueryResultsV1>(reader);
+                        return true;
+                    }
                 }
             }
-            else
+            catch (Exception e)
             {
                 result = null;
+                ex = e;
                 return false;
+            }
+            finally
+            {
+                content.Dispose(); // TODO: NOT the place to do this
             }
         }
 
